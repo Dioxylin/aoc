@@ -1,27 +1,83 @@
 inputFile = "input_1.txt"
 
+class Coordinates
+	def initialize(north,east)
+		@blocksNorth = north
+		@blocksEast = east
+	end
+	def distance
+		@blocksNorth.abs + @blocksEast.abs
+	end
+	def to_s
+		"#{@blocksNorth},#{@blocksEast}"
+	end
+	def ==(other)
+		self.blocksNorth == other.blocksNorth and
+			self.blocksEast == other.blocksEast
+	end
+	attr_reader :blocksNorth, :blocksEast
+	attr_writer :blocksNorth, :blocksEast
+end
+
 class Travel
 	def initialize
 		@direction = "north"
-		@blocksNorth = 0
-		@blocksEast = 0
+		@currentCoordinates = Coordinates.new(0, 0)
+		@visited = Array.new
+		# We need to copy the object or else we change it with += and -=.
+		@visited.push(@currentCoordinates.dup)
+		# Print as we visit everywhere
+		@loudlyVisit = false
+		@bunnyHQ = nil
 	end
 	def left=(value)
+		north = @currentCoordinates.blocksNorth
+		east = @currentCoordinates.blocksEast
 		if @direction == "north" then
 			@direction = "west"
-			@blocksEast -= value
+			north = north..north
+			east = (east-value)..(east-1)
+			@currentCoordinates.blocksEast -= value
 		elsif @direction == "south" then
 			@direction = "east"
-			@blocksEast += value
+			north = north..north
+			east = (east+1)..(east+value)
+			@currentCoordinates.blocksEast += value
 		elsif @direction == "east" then
 			@direction = "north"
-			@blocksNorth += value
+			north = (north+1)..(north+value)
+			east = east..east
+			@currentCoordinates.blocksNorth += value
 		elsif @direction == "west" then
 			@direction = "south"
-			@blocksNorth -= value
+			north = (north-value)..(north-1)
+			east = east..east
+			@currentCoordinates.blocksNorth -= value
 		end
-		#puts to_s
+		# We don't want to record turns in place.
+		if value == 0 then
+			return 0
+		end
+		# either north or east will stay constant and allow the other to loop.
+		north.each do |n|
+			east.each do |e|
+				coord = Coordinates.new(n,e)
+				if @visited.include?(coord) then
+					if @loudlyVisit then
+						puts "*** FOUND: #{coord}; distance: #{coord.distance}"
+					end
+					if @bunnyHQ.nil? then
+						@bunnyHQ = coord.dup
+					end
+				end
+				@visited.push(coord.dup)
+				if @loudlyVisit then
+					puts "Visited #{coord}"
+				end
+			end
+		end
 	end
+	# 3 lefts make a right.
 	def right=(value)
 		self.left = 0
 		self.left = 0
@@ -38,40 +94,15 @@ class Travel
 		else
 			raise "Error parsing: #{s}"
 		end
-		#puts to_s
 	end
 	def distance
-		@blocksNorth.abs + @blocksEast.abs
+		@currentCoordinates.blocksNorth.abs + @currentCoordinates.blocksEast.abs
 	end
-	attr_reader :blocksNorth, :blocksEast, :direction
+	attr_reader :previousCoordinates, :currentCoordinates, :visited, :loudlyVisit, :bunnyHQ
 	def to_s
-		"#{@blocksNorth},#{@blocksEast}; facting #{@direction}; distance from origin: #{distance}"
+		"#{@currentCoordinates.blocksNorth},#{@currentCoordinates.blocksEast}; facting #{@direction}; distance from origin: #{distance}"
 	end
 end
-
-
-test1 = "R2, L3".split(', ')
-taxi1 = Travel.new
-test2 = "R2, R2, R2".split(', ')
-taxi2 = Travel.new
-test3 = "R5, L5, R5, R3".split(', ')
-taxi3 = Travel.new
-
-test1.each do |d|
-	taxi1.parse(d)
-end
-test2.each do |d|
-	taxi2.parse(d)
-end
-test3.each do |d|
-	taxi3.parse(d)
-end
-
-puts taxi1.to_s
-puts taxi2.to_s
-puts taxi3.to_s
-
-
 
 taxi = Travel.new
 
@@ -81,13 +112,11 @@ f.close
 
 # No newlines in string please
 s = s[/[^\n]*/]
-puts s
+#puts s
 
 directions = s.split(', ')
-#puts directions
 directions.each do |d|
 	taxi.parse(d)
 end
 
-puts taxi.to_s
-puts taxi.distance
+puts "Easter bunny's HQ is #{taxi.bunnyHQ.distance} blocks away at N,E #{taxi.bunnyHQ}."
