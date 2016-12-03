@@ -96,9 +96,21 @@ triangles = []
 sides_list.collect do |sides|
 	begin
 		triangle = Triangle.new(sides)
-	triangles.push(triangle)
+		triangles.push(triangle)
 	rescue InvalidTriangleError
 	end
 end
 
-puts triangles.length
+print "Valid row-based triangles: #{triangles.length}\n"
+
+triangles = []
+
+sides_list.transpose.flatten.each_slice(3).collect do |sides|
+	begin
+		triangle = Triangle.new(sides)
+		triangles.push(triangle)
+	rescue InvalidTriangleError
+	end
+end
+
+print "Valid column-based triangles: #{triangles.length}\n"
