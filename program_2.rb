@@ -1,6 +1,18 @@
 test = false
 
+##
+# This is a keypad.
+#
+# Abstracts the keypad given from:
+#
+#     1 2 3
+#     4 5 6
+#     7 8 9
+#
+# Really, this is coupled highly with the Finger class.
 class Keypad
+	##
+	# Creates a new keypad with initial key position 5.
 	def initialize
 		@key = 5
 	end
@@ -33,6 +45,18 @@ class Keypad
 	attr_reader :key
 end
 
+##
+# This is the over-engineered keypad.
+#
+# This abstracts the following keypad:
+#
+#        1
+#      2 3 4
+#    5 6 7 8 9
+#      A B C
+#        D
+#
+# This is highly coupled with Finger to produce our results.
 class ShittyKeypad
 	def initialize
 		@key = 5
@@ -43,6 +67,8 @@ class ShittyKeypad
 			@key -= 2
 		when 6,7,8,0xA,0xB,0xC
 			@key -= 4
+		else
+			nil
 		end
 	end
 	def down
@@ -51,34 +77,44 @@ class ShittyKeypad
 			@key += 2
 		when 2,3,4,6,7,8
 			@key += 4
+		else
+			nil
 		end
 	end
 	def left
 		case @key
 		when 3,4,6,7,8,9,0xB,0xC
 			@key -= 1
+		else
+			nil
 		end
 	end
 	def right
 		case @key
 		when 2,3,5,6,7,8,0xA,0xB
 			@key += 1
+		else
+			nil
 		end
 	end
 	attr_reader :key
 end
 
+##
+# Abstracts a finger that points to the keypad to work out the solution.
+#
+# Highly coupled with Keypad and ShittyKeypad
 class Finger
 	def initialize(keypad)
 		@keypad = keypad
 		@keyToPress = []
 	end
-	def parseLines(str)
+	def parse_lines(str)
 		str.each_char do |c|
-			parseCharacter(c)
+			parse_character(c)
 		end
 	end
-	def parseCharacter(c)
+	def parse_character(c)
 		if c == "U" then
 			@keypad.up
 		elsif c == "D" then
@@ -103,13 +139,13 @@ if test then
 
 	keypad = Keypad.new
 	finger = Finger.new(keypad)
-	finger.parseLines(test1)
+	finger.parse_lines(test1)
 	print finger.keyToPress
 	puts
 
 	shittyKeypad = ShittyKeypad.new
 	fingerButt = Finger.new(shittyKeypad)
-	fingerButt.parseLines(test1)
+	fingerButt.parse_lines(test1)
 	print fingerButt.keyToPress
 	puts
 end
@@ -123,10 +159,10 @@ shittyKeypad = ShittyKeypad.new
 fingerButt = Finger.new(shittyKeypad)
 
 string = f.read
-finger.parseLines(string)
+finger.parse_lines(string)
 print finger.keyToPress
 puts
 
-fingerButt.parseLines(string)
+fingerButt.parse_lines(string)
 print fingerButt.keyToPress
 puts
