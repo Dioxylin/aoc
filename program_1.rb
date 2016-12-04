@@ -30,6 +30,16 @@ class Travel
 		@loudlyVisit = false
 		@bunnyHQ = nil
 	end
+	def check_location(coord)
+		if @visited.include?(coord) then
+			if @loudlyVisit then
+				puts "*** FOUND: #{coord}; distance: #{coord.distance}"
+			end
+			if @bunnyHQ.nil? then
+				@bunnyHQ = coord.dup
+			end
+		end
+	end
 	def left=(value)
 		north = @currentCoordinates.blocksNorth
 		east = @currentCoordinates.blocksEast
@@ -62,14 +72,7 @@ class Travel
 		north.each do |n|
 			east.each do |e|
 				coord = Coordinates.new(n,e)
-				if @visited.include?(coord) then
-					if @loudlyVisit then
-						puts "*** FOUND: #{coord}; distance: #{coord.distance}"
-					end
-					if @bunnyHQ.nil? then
-						@bunnyHQ = coord.dup
-					end
-				end
+				check_location(coord)
 				@visited.push(coord.dup)
 				if @loudlyVisit then
 					puts "Visited #{coord}"
