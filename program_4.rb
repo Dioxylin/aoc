@@ -16,6 +16,7 @@ class EncryptedName
 		retstr = ""
 		str.each_char do |c|
 			if c =~ /[0-9]/ then
+				# Kill last hyphen
 				retstr[-1] = ""
 				break
 			else
@@ -29,10 +30,10 @@ class EncryptedName
 		Integer($&)
 	end
 	def parse_checksum(str)
-		str =~ /\[[a-z]+\]/
-		str = $&
-		str = str.gsub("[","")
-		str = str.gsub("]","")
+		# match checksum
+		str = str.match(/\[[a-z]+\]/).to_s
+		# kill square brackets
+		str = str.gsub(/\[|\]/,"")
 		str
 	end
 	def check_room_real
@@ -54,10 +55,8 @@ class EncryptedName
 			if count > prevcount then
 				raise BadRoomError.new(@full)
 			end
-			if count == prevcount then
-				if prevchar.ord >= c.ord then
-					raise BadRoomError.new(@full)
-				end
+			if count == prevcount && prevchar.ord >= c.ord then
+				raise BadRoomError.new(@full)
 			end
 			prevcount = count
 			prevchar = c
