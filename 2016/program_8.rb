@@ -1,13 +1,15 @@
 Input = "input_8.txt"
 
-def print_screen(screen)
+def print_screen(screen, newline=true)
 	screen.each do |row|
 		row.each do |cell|
 			print cell
 		end
 		puts
 	end
-	puts
+	if newline then
+		puts
+	end
 end
 
 def rect(screen, row, column)
@@ -49,7 +51,14 @@ def rotate_col(screen, column_num, magnitude)
 	end
 end
 
-def parse_instructions(screen, lines)
+def parse_instructions(screen, lines, print_intermediates=false, sleep_time=0)
+	# Let's make a clean exit on ^C.
+	exiting=false
+	trap("SIGINT") { exiting=true }
+
+	if print_intermediates then
+		(1..6).each { puts }
+	end
 	lines.each do |line|
 		if line.start_with?("rect ") then
 			parts = line.split(" ")
@@ -68,7 +77,19 @@ def parse_instructions(screen, lines)
 			magnitude = Integer(parts[4])
 			rotate_col(screen, column_num, magnitude)
 		end
+		if print_intermediates then
+			# Go up 6 lines (\033[6A]) and cursor to beginning of line (\r).
+			# Somehow this actually runs in Powershell properly...
+			print "\033[6A\r"
+			print_screen(screen, false)
+		end
+		if exiting then
+			exit!
+		end
+		sleep(sleep_time)
 	end
+	# Restore default trap for SIGINT.
+	trap("SIGINT", "DEFAULT")
 end
 
 def count_lit_pixels(screen)
@@ -90,8 +111,7 @@ def main
 
 	# screen is row by column
 	screen = Array.new(6) { Array.new(50,".") }
-	parse_instructions(screen, lines)
-	print_screen(screen)
+	parse_instructions(screen, lines, true, 0.01)
 	lit_pixel_count = count_lit_pixels(screen)
 	puts "Number of lit pixels: #{lit_pixel_count}."
 end
