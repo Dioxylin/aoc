@@ -125,7 +125,9 @@ Main_Loop:
 
 		-- For dramatic effect, overwrite previous character and put the number, then delay.
 		Put_Number_Dramatically: declare
-			Keypad_Number : constant Key_Value := Keypad(Current_Key.Row, Current_Key.Column);
+			-- Also compile-time check a valid key here.
+			subtype Valid_Key_Value is Key_Value range Key_Value'First+1..Key_Value'Last;
+			Keypad_Number : constant Valid_Key_Value := Keypad(Current_Key.Row, Current_Key.Column);
 			Keypad_Number_String : constant String := Trim(Integer'Image(Keypad_Number), Ada.Strings.Left);
 		begin
 			Put(Backspace);
@@ -135,9 +137,6 @@ Main_Loop:
 				when 11 => Put("B");
 				when 12 => Put("C");
 				when 13 => Put("D");
-				when Invalid_Value =>
-					Put_Line("Invalid value for some reason.");
-					return;
 			end case;
 		end Put_Number_Dramatically;
 		delay 0.001;
