@@ -7,6 +7,8 @@ procedure Program_2 is
 	package Char_IO is new Ada.Sequential_IO (Character);
 	use Char_IO;
 
+	subtype Keypad_Type is Integer range 1..2;
+
 	subtype Row_Range is Integer range 0..6;
 	subtype Column_Range is Integer range 0..6;
 
@@ -57,7 +59,7 @@ procedure Program_2 is
 	Row_Change : Row_Change_Value;
 	Column_Change : Column_Change_Value;
 
-	Which_Keypad : Integer := 1;
+	Which_Keypad : Keypad_Type := 1;
 begin
 	-- We jump back up here with Which_Keypad set to 2.
 	<<Again>>
